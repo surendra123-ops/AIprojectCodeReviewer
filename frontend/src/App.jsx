@@ -8,21 +8,28 @@ import "highlight.js/styles/github-dark.css";
 import axios from 'axios'
 import './App.css'
 
+// Use the environment variable for API URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
 function App() {
- 
-  const [ code, setCode ] = useState(` function sum() {
+  const [code, setCode] = useState(` function sum() {
   return 1 + 1
 }`)
 
-  const [ review, setReview ] = useState(``)
+  const [review, setReview] = useState(``)
 
   useEffect(() => {
     prism.highlightAll()
   }, [])
 
   async function reviewCode() {
-    const response = await axios.post('http://localhost:3000/ai/get-review', { code })
-    setReview(response.data)
+    try {
+      const response = await axios.post(`${API_URL}/ai/get-review`, { code })
+      setReview(response.data)
+    } catch (error) {
+      setReview('Error: Could not get review from server.')
+      console.error(error)
+    }
   }
 
   return (
@@ -50,17 +57,13 @@ function App() {
             className="review">Review</div>
         </div>
         <div className="right">
-          <Markdown
-
-            rehypePlugins={[ rehypeHighlight ]}
-
-          >{review}</Markdown>
+          <Markdown rehypePlugins={[rehypeHighlight]}>
+            {review}
+          </Markdown>
         </div>
       </main>
     </>
   )
 }
-
-
 
 export default App
